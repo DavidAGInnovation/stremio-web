@@ -3,40 +3,59 @@
 import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMatch } from 'react-router';
-import { useServiceWorkerUpdater, useTimeout } from 'stremio/common';
+import { UpdateBanner } from 'stremio/components';
+import useServiceWorkerUpdater from './useServiceWorkerUpdater';
 import styles from './WebUpdateScreen.less';
-
-const APPLY_DELAY = 2000;
 
 const WebUpdateScreen = () => {
     const { t } = useTranslation();
-    const { updateReady, applyUpdate } = useServiceWorkerUpdater();
+    const { state, dismissed, applyUpdate, dismissUpdate } = useServiceWorkerUpdater();
     const isPlayer = useMatch('/player/*');
-    const timeout = useTimeout(APPLY_DELAY);
-    const visible = updateReady && isPlayer === null;
+    const autoApply = state.status === 'ready' && state.autoApply;
+    const promptVisible =
+        !dismissed &&
+        isPlayer === null &&
+        (state.status === 'ready' || state.status === 'reload-ready' || state.status === 'failed');
 
     useEffect(() => {
-        if (visible) {
-            timeout.start(applyUpdate);
-
-            return timeout.cancel;
+        if (autoApply && isPlayer === null) {
+            applyUpdate();
         }
-    }, [visible]);
+    }, [applyUpdate, autoApply, isPlayer]);
 
-    if (!visible) {
-        return null;
+    if (state.status === 'applying') {
+        return (
+            <div
+                className={styles['web-update-screen']}
+                role={'status'}
+                aria-live={'polite'}
+                aria-busy={true}
+            >
+                <img
+                    className={styles['logo']}
+                    src={require('/assets/images/stremio_symbol.png')}
+                    alt={''}
+                />
+                <div className={styles['title']}>
+                    {t('UPDATER_TITLE')}
+                </div>
+                <div className={styles['progress']} aria-hidden={true}>
+                    <div className={styles['progress-value']} />
+                </div>
+            </div>
+        );
     }
 
     return (
-        <div className={styles['web-update-screen']}>
-            <img className={styles['logo']} src={require('/assets/images/stremio_symbol.png')} alt={' '} />
-            <div className={styles['title']}>
-                {t('UPDATER_TITLE')}
-            </div>
-            <div className={styles['progress']} aria-hidden={true}>
-                <div className={styles['progress-value']} />
-            </div>
-        </div>
+        <UpdateBanner
+            className={styles['web-update-banner']}
+            visible={promptVisible}
+            label={t('UPDATER_TITLE')}
+            actionLabel={state.status === 'failed' ? t('TRY_AGAIN') : t('RELOAD_UI')}
+            closeLabel={t('BUTTON_CLOSE')}
+            onAction={applyUpdate}
+            onClose={dismissUpdate}
+        />
     );
 };
 

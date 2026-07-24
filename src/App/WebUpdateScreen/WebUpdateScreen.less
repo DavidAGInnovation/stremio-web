@@ -2,6 +2,14 @@
 
 @import (reference) '~@stremio/stremio-colors/less/stremio-colors.less';
 
+.web-update-banner {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 101;
+}
+
 .web-update-screen {
     position: fixed;
     top: 0;
@@ -30,9 +38,9 @@
         }
     }
 
-    @keyframes flash {
+    @keyframes pulse {
         0% {
-            opacity: 0.4;
+            opacity: 0.55;
         }
 
         100% {
@@ -40,13 +48,13 @@
         }
     }
 
-    @keyframes progress-fill {
+    @keyframes progress {
         0% {
-            transform: scaleX(0);
+            transform: translateX(-100%);
         }
 
         100% {
-            transform: scaleX(1);
+            transform: translateX(250%);
         }
     }
 
@@ -56,7 +64,7 @@
         height: 8rem;
         object-fit: contain;
         object-position: center;
-        animation: 1s linear infinite alternate flash;
+        animation: 1s linear infinite alternate pulse;
     }
 
     .title {
@@ -76,6 +84,7 @@
         height: 0.4rem;
         margin-top: 0.25rem;
         border-radius: var(--border-radius);
+        overflow: hidden;
 
         &::before {
             content: '';
@@ -93,12 +102,11 @@
     .progress-value {
         position: relative;
         z-index: 1;
-        width: 100%;
+        width: 40%;
         height: 100%;
         border-radius: inherit;
         background-color: var(--primary-accent-color);
-        transform-origin: left;
-        animation: 2s ease-out forwards progress-fill;
+        animation: 1.2s ease-in-out infinite progress;
     }
 
     @media only screen and (max-width: 30rem) {
@@ -116,6 +124,20 @@
 
         .progress {
             width: 15rem;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+
+        .logo {
+            animation: none;
+        }
+
+        .progress-value {
+            width: 100%;
+            opacity: 0.65;
+            animation: none;
         }
     }
 }

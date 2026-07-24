@@ -18,8 +18,9 @@ const i18n = require('i18next');
 const { initReactI18next } = require('react-i18next');
 const stremioTranslations = require('stremio-translations');
 const App = require('./App');
+const { default: WebUpdateScreen } = require('./App/WebUpdateScreen');
 const { CoreProvider } = require('./core');
-const { FileDropProvider, PlatformProvider, registerServiceWorker } = require('./common');
+const { FileDropProvider, PlatformProvider } = require('./common');
 
 const translations = Object.fromEntries(Object.entries(stremioTranslations()).map(([key, value]) => [key, {
     translation: value
@@ -48,14 +49,13 @@ root.render(
             <CoreProvider appInfo={appInfo}>
                 <FileDropProvider>
                     <HashRouter>
-                        <App />
+                        <>
+                            <WebUpdateScreen />
+                            <App />
+                        </>
                     </HashRouter>
                 </FileDropProvider>
             </CoreProvider>
         </PlatformProvider>
     </React.StrictMode>
 );
-
-if (process.env.NODE_ENV === 'production' && process.env.SERVICE_WORKER_DISABLED !== 'true' && process.env.SERVICE_WORKER_DISABLED !== true && 'serviceWorker' in navigator) {
-    window.addEventListener('load', registerServiceWorker);
-}
